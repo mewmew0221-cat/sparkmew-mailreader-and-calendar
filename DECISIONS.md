@@ -11,3 +11,5 @@
 - [2026-08-03] 原始 `智慧助手中央資料庫.xlsx` 已轉為 Google Sheets 原生格式使用，舊 xlsx 刪除 ｜xlsx（Office 相容模式）無法正常「發布到網路」，Apps Script 功能也受限 ｜使用者確認
 - [2026-08-03] 資料提煉來源（Gmail/排班表 → Pending_Schedule）由 Gemini 雲端 AI「Spark」功能處理，非本專案自寫程式碼 ｜使用者說明 ｜對話紀錄
 - [2026-08-03] 決定發布到 GitHub Pages，且需加密碼保護 ｜公開網址會曝光行程/記帳等個人資訊 ｜使用者確認，repo: github.com/mewmew0221-cat/sparkmew-mailreader-and-calendar
+- [2026-08-03] 入口密碼採前端 SHA-256 雜湊比對 + localStorage 記住解鎖狀態，密碼與 GAS 網址一樣不寫進公開原始碼 ｜足夠擋隨手看的人，且不需要後端登入系統，符合單人使用工具的成本效益 ｜app.js、index.html、styles.css
+- [2026-08-03] header 改為 `flex-wrap: wrap`，允許內容換行 ｜原本狀態燈+三統計+日曆連結+主題切換+三顆圖示按鈕擠一行，桌機視窗較窄時會超出畫面右側點不到 ｜styles.css

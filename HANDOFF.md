@@ -2,37 +2,40 @@
 
 ## 目前進行中
 
-- GAS 雙向同步已修復並驗證可用：讀取真實 Google 日曆（含私密行程）、
-  一鍵加日曆真寫入、摘要牆刪除條目，皆測試成功。
-- 正要把使用方式從本機 `file:///` 開檔，改為發布成 GitHub Pages 網址，
-  並加密碼保護（因為要公開發布，且 GAS Web App 網址本身等同半個密鑰）。
+- 專案已可正常使用：GAS 雙向同步（讀真實日曆、寫入日曆、刪除摘要條目）、
+  入口密碼保護、GitHub Pages 部署，全部驗證通過。本次 session 到此收工。
 
 ## 下一步
 
-1. 使用者已建立 repo：`github.com/mewmew0221-cat/sparkmew-mailreader-and-calendar`
-2. 把 `index.html`／`app.js`／`styles.css` push 上去、啟用 GitHub Pages
-3. 加簡單密碼保護（前端層級即可，公開頁會曝光行程/記帳等個人資訊）
-4. 手機瀏覽器開網址測試，確認可正常連 GAS、可加入主畫面
+- 目前沒有阻塞事項。有空時可做（見 TODO.md 篇章 2）：
+  Receipts／Subscriptions 頁面補上刪除按鈕（後端 `deleteEntry` 已支援，
+  只差前端接線，比照 Summaries 的做法即可）。
 
 ## 未解決問題
 
 - 資料提煉來源（Gmail/排班表圖片 → Pending_Schedule）由 Gemini 雲端 AI
   「Spark」功能處理，不在本專案程式碼範圍內，運作機制未知；未來若要調整
   這塊需另外了解。
-- Receipts／Subscriptions 頁面目前沒有像 Summaries 一樣的刪除功能
-  （後端 `deleteEntry` 已支援，只是前端還沒接上按鈕），見 TODO.md。
+- GAS Web App 網址與密碼解鎖狀態存在 `localStorage`，**依網站來源分別儲存**。
+  換瀏覽器/換裝置/清快取，或本機 `file://` 與 GitHub Pages 網址切換時，
+  都要重新到設定頁貼一次 GAS 網址、重新輸入密碼解鎖一次。這是刻意設計
+  （避免 GAS 網址寫進公開原始碼外流），不是 bug。
 
 ## 本次 session 動過的檔案
 
-- `Create_Google_Sheet.gs`（新增 `doGet`/`doPost`/`addCalendarEvent`/
-  `deleteSheetRow` 等，方案 1 GAS Web App 後端）
+- `Create_Google_Sheet.gs`（GAS Web App 後端：`doGet`/`doPost`/
+  `addCalendarEvent`/`deleteSheetRow` 等）
 - `app.js`（GAS 串接、待審核卡片 id bug 修復、逾時放寬+自動重試、
-  摘要牆刪除功能）
-- `index.html`（設定 Modal 新增 GAS Web App 網址欄位）
+  摘要牆刪除功能、入口密碼鎖定邏輯）
+- `index.html`（GAS Web App 網址設定欄位、鎖定畫面、鎖定按鈕）
+- `styles.css`（鎖定畫面樣式、header 排版修正允許換行）
 - 開案骨架五檔（新建：`INDEX.md`／`DECISIONS.md`／`HANDOFF.md`／
   `TODO.md`／`CLAUDE.md`）
 - `handover_notes.md`（內容拆分進 DECISIONS/HANDOFF 後縮減）
 - 刪除舊 `智慧助手中央資料庫.xlsx`（已轉正為 Google Sheets 原生格式）
+- 建立獨立 git repo 並 push：
+  `github.com/mewmew0221-cat/sparkmew-mailreader-and-calendar`
+- 根目錄 `.gitignore`／`INDEX.md` 登記本專案為獨立 repo
 
 ## ⚠ 提醒
 
@@ -40,9 +43,12 @@
   「新版本」，單純存檔不會讓網址生效新程式碼。
 - GAS Web App 網址目前設定為「任何人」可呼叫並寫入日曆/刪除資料，
   外流等於讓陌生人能操控使用者的日曆與 Sheet，不可公開分享。
+- 入口密碼（雜湊值存在 `app.js` 常數 `LOCK_PASSWORD_HASH`）只是前端層級
+  保護，擋隨手看的人，非真正安全機制，懂開發者工具的人仍可繞過。
 
 ## 🕐 最後更新
 
 - 時間：2026-08-03
 - 更新者：Claude Sonnet 5 (Claude Code) @ 本機
-- Git push：—（本專案尚未啟用 git，即將建立並 push 到 GitHub Pages repo）
+- Git push：✅ 已推（`spark 應用` 獨立 repo + 根目錄 repo 皆已同步）
+- 收工狀態：**功能全部驗證通過，無阻塞事項，可正常收工**。
