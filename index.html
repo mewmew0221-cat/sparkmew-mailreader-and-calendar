@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="theme-tech">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SparkMew | Google Workspace 智慧助手儀表板</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="locked">
+
+  <!-- 🔒 入口密碼鎖定畫面 -->
+  <div class="lock-screen" id="lock-screen">
+    <form class="lock-box" id="lock-form">
+      <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+      <h2>SparkMew 已鎖定</h2>
+      <p class="text-sm text-muted">請輸入密碼以檢視儀表板</p>
+      <input type="password" id="lock-password-input" class="form-input" placeholder="密碼" autocomplete="off" autofocus>
+      <button type="submit" class="btn-primary lock-submit-btn">解鎖</button>
+      <p class="lock-error-msg" id="lock-error-msg" style="display:none;">密碼錯誤，請再試一次</p>
+    </form>
+  </div>
+
+  <div id="app-shell">
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-bolt-lightning"></i>
+        </div>
+        <div class="brand-text">
+          <h1>SparkMew <span>AI</span></h1>
+          <p class="subtitle">Google Workspace 智慧助手</p>
+        </div>
+      </div>
+
+      <!-- Live Connection Status Indicator -->
+      <div class="live-status-pill" id="live-status-badge" title="連線狀態">
+        <span class="status-dot dot-demo"></span>
+        <span class="status-text" id="status-text-val">未連線資料源</span>
+      </div>
+
+      <!-- Quick Stats Pills -->
+      <div class="quick-stats">
+        <div class="stat-pill" title="今日總行程">
+          <i class="fa-solid fa-calendar-day icon-today"></i>
+          <span class="stat-label">今天</span>
+          <span class="stat-value" id="stat-today-count">0</span>
+        </div>
+        <div class="stat-pill highlight-pill" id="stat-pending-pill" title="前往第二頁查看待審核行程">
+          <i class="fa-solid fa-bell-concierge icon-pending"></i>
+          <span class="stat-label">待審核</span>
+          <span class="stat-value badge-pending" id="stat-pending-count">0</span>
+        </div>
+        <div class="stat-pill" title="本月累積花費">
+          <i class="fa-solid fa-receipt icon-expense"></i>
+          <span class="stat-label">本月記帳</span>
+          <span class="stat-value" id="stat-month-expense">$0</span>
+        </div>
+      </div>
+
+      <!-- Header Actions: Theme Switcher & Settings -->
+      <div class="header-actions">
+        <a href="https://calendar.google.com" target="_blank" class="btn-quick-gcal" title="直接開啟 Google 日曆">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Google 日曆</span>
+        </a>
+
+        <div class="theme-switcher-group">
+          <button class="theme-btn active" data-theme="tech" title="切換為 🌌 科技風格">
+            <i class="fa-solid fa-atom"></i> <span>科技</span>
+          </button>
+          <button class="theme-btn" data-theme="minimalist" title="切換為 🍃 簡約風格">
+            <i class="fa-solid fa-leaf"></i> <span>簡約</span>
+          </button>
+          <button class="theme-btn" data-theme="elegant" title="切換為 💎 優雅磨砂風格">
+            <i class="fa-solid fa-gem"></i> <span>優雅</span>
+          </button>
+        </div>
+
+        <button class="btn-icon" id="btn-open-settings" onclick="SparkMewApp.openSettingsModal()" title="設定與資料源">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+        <button class="btn-icon" id="btn-refresh-data" onclick="SparkMewApp.refreshLiveData()" title="重新載入數據">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button class="btn-icon" id="btn-lock-app" onclick="SparkMewApp.lockApp()" title="鎖定畫面">
+          <i class="fa-solid fa-lock"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs Bar -->
+  <nav class="tabs-navigation-bar">
+    <div class="tabs-container">
+      <button class="tab-nav-btn active" data-tab="tab-home">
+        <i class="fa-solid fa-house"></i> 第一頁：今日與一週預覽
+      </button>
+      <button class="tab-nav-btn" data-tab="tab-calendar">
+        <i class="fa-solid fa-calendar-days"></i> 第二頁：月曆視圖與待審核
+      </button>
+      <button class="tab-nav-btn" data-tab="tab-archive">
+        <i class="fa-solid fa-folder-open"></i> 第三頁：記帳、摘要與訂閱
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Areas -->
+  <main class="dashboard-main">
+
+    <!-- 第一頁：今日與一週預覽 -->
+    <div class="tab-page-content active" id="tab-home">
+
+      <!-- 1.1 今日行程 -->
+      <section class="page-card today-section">
+        <div class="card-header border-bottom">
+          <div class="today-title-group">
+            <span class="day-badge">TODAY</span>
+            <h2 id="today-full-date">載入日期中...</h2>
+          </div>
+          <div class="header-right-group" id="today-routine-chips-bar">
+            <!-- Dynamic Routine Chips -->
+          </div>
+        </div>
+
+        <div class="vertical-timeline-container">
+          <div class="vertical-timeline-header">
+            <h3><i class="fa-solid fa-timeline"></i> 今日行程 (直式時間軸 • 卡片點擊直達 Google 日曆)</h3>
+          </div>
+
+          <div class="vertical-time-track" id="vertical-time-track">
+            <!-- Dynamic Vertical Time Nodes -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 1.2 明天行程預覽 -->
+      <section class="page-card tomorrow-section">
+        <div class="card-header border-bottom">
+          <div class="today-title-group">
+            <span class="day-badge badge-tomorrow">TOMORROW</span>
+            <h2 id="tomorrow-full-date">明天預覽</h2>
+          </div>
+          <span class="text-sm text-muted">行程提前預覽</span>
+        </div>
+
+        <div class="tomorrow-events-grid" id="tomorrow-events-list">
+          <!-- Dynamic Tomorrow Events -->
+        </div>
+      </section>
+
+      <!-- 1.3 未來一週行程概覽 -->
+      <section class="page-card next-week-section">
+        <div class="card-header border-bottom">
+          <div class="section-title">
+            <i class="fa-solid fa-calendar-week icon-today"></i>
+            <h2>未來一週行程概覽 (Next Week Glance)</h2>
+          </div>
+          <span class="text-sm text-muted">本週行程全貌</span>
+        </div>
+
+        <div class="next-week-cards-grid" id="next-week-container">
+          <!-- Dynamic Next Week Days -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 第二頁：月曆視圖與待審核 -->
+    <div class="tab-page-content" id="tab-calendar">
+      
+      <!-- 2.1 月曆格式視圖 -->
+      <section class="page-card monthly-calendar-card">
+        <div class="card-header border-bottom">
+          <div class="section-title">
+            <i class="fa-solid fa-calendar-days icon-today"></i>
+            <h2 id="month-calendar-header-title">行程月曆</h2>
+          </div>
+          <div class="calendar-nav-controls">
+            <button class="btn-icon-sm" id="cal-prev-month"><i class="fa-solid fa-chevron-left"></i></button>
+            <span class="month-title-label" id="month-title-label">行程月曆</span>
+            <button class="btn-icon-sm" id="cal-next-month"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <div class="month-grid-container" id="monthly-grid-container">
+          <!-- Dynamic Monthly Grid -->
+        </div>
+
+        <!-- 點擊日期展開明細區 -->
+        <div class="selected-day-agenda-panel" id="selected-day-agenda" style="display: none;">
+          <div class="agenda-header">
+            <h4 id="selected-day-title"><i class="fa-solid fa-calendar-check"></i> 行程明細</h4>
+            <span class="text-sm text-muted">點擊月曆日期切換明細</span>
+          </div>
+          <div class="agenda-items-list" id="selected-day-items">
+            <!-- Dynamic Agenda Items -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 2.2 待審核行程專區 -->
+      <section class="page-card pending-section-page2">
+        <div class="card-header border-accent">
+          <div class="section-title">
+            <i class="fa-solid fa-envelope-open-text icon-warning"></i>
+            <h2>待審核行程專區 (Pending Approvals)</h2>
+            <span class="badge-count" id="pending-hub-badge">0 筆待處理</span>
+          </div>
+          <span class="text-sm text-muted">Spark 從 Gmail 自動提煉，審核無誤後點擊「一鍵加日曆」即可寫入 Google Calendar</span>
+        </div>
+
+        <div class="pending-cards-grid" id="pending-cards-container">
+          <!-- Dynamic Pending Cards -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 第三頁：記帳、摘要與訂閱 -->
+    <div class="tab-page-content" id="tab-archive">
+      
+      <!-- 3.1 智慧記帳與收據牆 -->
+      <section class="page-card">
+        <div class="card-header border-bottom">
+          <div class="header-left">
+            <h2><i class="fa-solid fa-receipt icon-expense"></i> 智慧記帳與收據牆</h2>
+            <span class="total-amount-badge">本月總開銷: <strong id="expense-total-display">$0</strong></span>
+          </div>
+          <div class="category-filters" id="expense-category-filters">
+            <button class="filter-chip active" data-cat="all">全部</button>
+            <button class="filter-chip" data-cat="餐飲">餐飲</button>
+            <button class="filter-chip" data-cat="設備/軟體">軟體</button>
+            <button class="filter-chip" data-cat="交通">交通</button>
+            <button class="filter-chip" data-cat="公務">公務</button>
+          </div>
+        </div>
+
+        <div class="expense-cards-list" id="expense-list-container">
+          <!-- Dynamic Expense Cards -->
+        </div>
+      </section>
+
+      <!-- 3.2 公文懶人包與學術摘要牆 -->
+      <section class="page-card">
+        <div class="card-header border-bottom">
+          <div class="header-left">
+            <h2><i class="fa-solid fa-newspaper icon-today"></i> 公文懶人包與學術摘要牆</h2>
+          </div>
+          <div class="category-filters" id="summary-type-filters">
+            <button class="filter-chip active" data-type="all">全部</button>
+            <button class="filter-chip" data-type="公文">🏛️ 公文懶人包</button>
+            <button class="filter-chip" data-type="學術">🎓 學術重點</button>
+          </div>
+        </div>
+
+        <div class="summaries-cards-list" id="summaries-list-container">
+          <!-- Dynamic Summary Cards -->
+        </div>
+      </section>
+
+      <!-- 3.3 訂閱扣款到期提醒 -->
+      <section class="page-card">
+        <div class="card-header border-bottom">
+          <h2><i class="fa-solid fa-bell-concierge icon-sub"></i> 訂閱扣款到期提醒</h2>
+          <span class="text-sm text-muted">自動解析續費與扣款日</span>
+        </div>
+
+        <div class="subscriptions-list-grid" id="subscriptions-container">
+          <!-- Dynamic Subscriptions Cards -->
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>SparkMew AI Assistant &copy; 2026 | Google Workspace Auto-Archiving & Visual Dashboard</p>
+  </footer>
+
+  <!-- ⚙️ 設定視窗 Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-sliders"></i> SparkMew 設定與資料源串接</h2>
+        <button class="btn-close-modal" id="btn-close-settings" onclick="SparkMewApp.closeSettingsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- 🌟 GAS Web App 網址（推薦，唯一能真正寫入日曆的方式） -->
+        <div class="form-group border-box">
+          <label class="form-label-bold"><i class="fa-solid fa-bolt text-cyan"></i> 1. GAS Web App 網址（推薦，可真正寫入日曆）</label>
+          <input type="text" id="cfg-gas-url" placeholder="貼上部署後的網頁應用程式網址 (https://script.google.com/macros/s/.../exec)" class="form-input">
+          <small class="form-help text-warning">
+            💡 部署教學：開啟你的「智慧助手中央資料庫」Sheet →「擴充功能」→「Apps Script」→ 貼入
+            <code>Create_Google_Sheet.gs</code> 全部內容 → 右上角「部署」→「新增部署作業」→ 類型選「網頁應用程式」，
+            執行身分選「我」、存取權選「任何人」→ 部署後複製網址貼在這裡。
+            設定此項後，待審核行程會「一鍵」直接寫入你的真實 Google 日曆（含私密行程），不再需要手動點擊儲存。
+          </small>
+        </div>
+
+        <!-- Google Sheet 網址連線區（備援） -->
+        <div class="form-group border-box">
+          <label class="form-label-bold"><i class="fa-solid fa-table text-primary"></i> 2. Google Sheet 試算表 CSV 網址（備援，未設定 GAS 時使用）</label>
+          <input type="text" id="cfg-sheet-csv-url" placeholder="貼上您的 Google Sheet CSV 發佈網址" class="form-input">
+          <small class="form-help text-warning">
+            💡 將 Gmail 郵件與排班表 Spark 提煉之資料庫連結至本儀表板。
+          </small>
+        </div>
+
+        <!-- Google 日曆 iCal 訂閱連結（備援） -->
+        <div class="form-group border-box">
+          <label class="form-label-bold"><i class="fa-regular fa-calendar-check text-cyan"></i> 3. Google 日曆 iCal 密碼曆網址（備援，未設定 GAS 時使用）</label>
+          <input type="text" id="cfg-ical-url" placeholder="貼上您的 Google 日曆 iCal 密碼曆網址 (https://calendar.google.com/.../basic.ics)" class="form-input">
+          <small class="form-help text-warning">
+            💡 取得教學：開啟 Google 日曆網頁 $\rightarrow$ 點擊日曆旁【設定與分享】 $\rightarrow$ 拉到【整合日曆】 $\rightarrow$ 複製「iCal 格式的密碼曆網址」！
+            此方式仍受瀏覽器 CORS 限制，且無法自動寫入日曆，僅能讀取。
+          </small>
+        </div>
+
+        <hr class="divider">
+
+        <!-- 動態常規行程自訂區 -->
+        <div class="form-group border-box">
+          <div class="flex-between">
+            <label class="form-label-bold"><i class="fa-solid fa-clock text-cyan"></i> 4. 常規固定行程設定 (自訂班表 / 接小孩 / 運動)</label>
+            <button class="btn-add-routine-slot" id="btn-add-routine-row"><i class="fa-solid fa-plus"></i> 新增常規行程</button>
+          </div>
+          <small class="form-help mb-2">自由自訂您的每週固定行程：</small>
+
+          <div class="routine-slots-container" id="routine-slots-list">
+            <!-- Dynamic Routine Rows -->
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-reset-demo">清空所有設定與快取</button>
+          <button class="btn-primary" id="btn-save-settings">儲存設定並同步資料源</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  </div> <!-- /#app-shell -->
+
+  <script src="app.js"></script>
+</body>
+</html>
