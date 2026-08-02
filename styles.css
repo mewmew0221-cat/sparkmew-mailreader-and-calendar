@@ -107,9 +107,10 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -156,8 +157,8 @@ body {
   border-radius: var(--radius-pill);
   font-size: 0.82rem;
   font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: normal;
+  max-width: 100%;
 }
 
 .status-dot {
@@ -172,7 +173,7 @@ body {
 .dot-live { background: var(--accent-emerald); box-shadow: 0 0 8px var(--accent-emerald); }
 
 /* Quick Stats Pills */
-.quick-stats { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+.quick-stats { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .stat-pill {
   display: flex;
@@ -232,7 +233,7 @@ body {
 }
 
 /* Header Actions & Theme Switcher */
-.header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
 .theme-switcher-group {
   display: flex;
