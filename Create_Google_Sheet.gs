@@ -53,6 +53,11 @@ function setupSheets(ss) {
       title: "Subscriptions",
       headers: ["服務名稱", "下次扣款日", "扣款金額", "扣款週期", "狀態", "備註"],
       sample: ["Gemini Advanced 訂閱", "2026-08-15", 650, "每月", "續訂中", "信用卡末四碼 8888"]
+    },
+    {
+      title: "Documents_and_Contracts",
+      headers: ["日期", "分類", "主旨/文件名稱", "重點摘要與截止日", "備註/連結"],
+      sample: ["2026-07-29", "線上合約", "Lokelma 演講合約 E-1007051", "AstraZeneca 演講合約 completed", "Adobe Sign (Completed)"]
     }
   ];
 
@@ -126,7 +131,7 @@ function doPost(e) {
 }
 
 // 刪除記帳/摘要/訂閱其中一列（白名單限制可刪除的分頁，避免誤刪 Pending_Schedule）
-var DELETABLE_SHEETS_ = ['Receipts', 'Summaries', 'Subscriptions'];
+var DELETABLE_SHEETS_ = ['Receipts', 'Summaries', 'Subscriptions', 'Documents_and_Contracts'];
 
 function deleteSheetRow(sheetName, row) {
   if (DELETABLE_SHEETS_.indexOf(sheetName) === -1) {
@@ -157,6 +162,7 @@ function getAllData() {
   var receipts = readSheetAsObjects_('Receipts', ['date', 'vendor', 'amount', 'category', 'notes', 'recordedAt']);
   var summaries = readSheetAsObjects_('Summaries', ['date', 'type', 'subject', 'oneLiner', 'linkText']);
   var subscriptions = readSheetAsObjects_('Subscriptions', ['name', 'dueDate', 'amount', 'cycle', 'status', 'notes']);
+  var documents = readSheetAsObjects_('Documents_and_Contracts', ['date', 'category', 'subject', 'summary', 'notes']);
 
   return {
     success: true,
@@ -165,7 +171,8 @@ function getAllData() {
     calendarEvents: calendarEvents,
     receipts: receipts,
     summaries: summaries,
-    subscriptions: subscriptions
+    subscriptions: subscriptions,
+    documents: documents
   };
 }
 

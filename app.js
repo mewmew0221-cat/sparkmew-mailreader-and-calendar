@@ -85,7 +85,8 @@
       monthCalendarDays: [],
       receipts: [],
       summaries: [],
-      subscriptions: []
+      subscriptions: [],
+      documents: []
     }
   };
 
@@ -426,6 +427,7 @@
     state.demoData.receipts = json.receipts || [];
     state.demoData.summaries = json.summaries || [];
     state.demoData.subscriptions = json.subscriptions || [];
+    state.demoData.documents = json.documents || [];
 
     const now = new Date();
     const todayISO = isoDate(now);
@@ -912,7 +914,57 @@
     `).join('');
   }
 
-  // 8. Dynamic Routine Rows in Settings Modal
+  // 8. Render Documents & Contracts
+  function renderDocuments() {
+    const container = document.getElementById('documents-list-container');
+    if (!container) return;
+
+    const items = state.demoData.documents;
+    if (items.length === 0) {
+      container.innerHTML = `<p class="text-sm text-muted" style="padding: 10px;">目前無文件或合約紀錄。</p>`;
+      return;
+    }
+
+    container.innerHTML = items.map(d => `
+      <div class="summary-card" id="document-row-${d.row || ''}">
+        <div class="flex items-center gap-2" style="justify-content: space-between;">
+          <div class="flex items-center gap-2">
+            <span class="summary-tag tag-doc">${d.category || ''}</span>
+            <strong class="text-sm">${d.subject || ''}</strong>
+          </div>
+          ${d.row ? `<button class="btn-reject" onclick="SparkMewApp.deleteDocument(${d.row})" title="刪除此條目"><i class="fa-solid fa-trash-can"></i> 刪除</button>` : ''}
+        </div>
+        <div class="summary-one-liner">
+          <i class="fa-solid fa-quote-left text-muted"></i> ${d.summary || ''}
+        </div>
+        <div class="text-sm text-muted">
+          ${d.date || ''} • ${d.notes || ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function deleteDocument(row) {
+    if (!state.config.gasUrl) {
+      alert('⚠️ 尚未設定 GAS Web App 網址，無法刪除（刪除功能需要直接操作 Google Sheet）。');
+      return;
+    }
+    if (!confirm('確定要刪除這筆文件/合約紀錄嗎？此動作會直接從 Google Sheet 移除，無法復原。')) return;
+
+    const card = document.getElementById(`document-row-${row}`);
+    if (card) card.style.opacity = '0.5';
+
+    const result = await postGasAction('deleteEntry', { sheetName: 'Documents_and_Contracts', row });
+    if (result && result.success) {
+      await loadLiveSheetDataIfConfigured();
+      renderAllViews();
+    } else {
+      if (card) card.style.opacity = '1';
+      alert('❌ 刪除失敗：' + (result && result.error ? result.error : '未知錯誤'));
+    }
+  }
+
+  // 9. Dynamic Routine Rows in Settings Modal
   function renderRoutineSlotRows() {
     const container = document.getElementById('routine-slots-list');
     if (!container) return;
@@ -1054,6 +1106,7 @@
     renderReceipts();
     renderSummaries();
     renderSubscriptions();
+    renderDocuments();
   }
 
   // Non-blocking Synchronous Initialization Engine
@@ -1080,6 +1133,7 @@
     markAsAdded,
     rejectPendingItem,
     deleteSummary,
+    deleteDocument,
     selectCalendarDay,
     deleteRoutineRow,
     lockApp,
