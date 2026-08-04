@@ -102,11 +102,38 @@ function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) || 'getData';
   var result;
   if (action === 'getData') {
-    result = getAllData();
+    result = getCachedAllData_();
   } else {
     result = { error: '未知的 action: ' + action };
   }
   return jsonOutput(result);
+}
+
+// 讀取結果快取（CacheService），縮短「冷啟動 + 重新讀取全部分頁與日曆」的等待時間
+var CACHE_KEY_ = 'sparkmew_all_data_v1';
+var CACHE_TTL_SECONDS_ = 45;
+
+function getCachedAllData_() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get(CACHE_KEY_);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (err) {
+      // 快取內容壞掉時忽略，往下重新計算
+    }
+  }
+  var result = getAllData();
+  try {
+    cache.put(CACHE_KEY_, JSON.stringify(result), CACHE_TTL_SECONDS_);
+  } catch (err) {
+    // 資料量超過快取上限（100KB）時略過快取，不影響正常回應
+  }
+  return result;
+}
+
+function invalidateCache_() {
+  CacheService.getScriptCache().remove(CACHE_KEY_);
 }
 
 function doPost(e) {
@@ -126,6 +153,9 @@ function doPost(e) {
     result = deleteSheetRow(body.sheetName, body.row);
   } else {
     result = { success: false, error: '未知的 action: ' + body.action };
+  }
+  if (result && result.success) {
+    invalidateCache_(); // 寫入成功後清快取，避免下一次讀取還拿到寫入前的舊資料
   }
   return jsonOutput(result);
 }
