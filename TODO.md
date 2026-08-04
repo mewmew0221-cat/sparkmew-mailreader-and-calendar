@@ -5,7 +5,7 @@
 
 ## 1. 前端儀表板
 
-（無待辦）
+- [ ] 月曆上下月切換按鈕（`cal-prev-month`/`cal-next-month`）尚未接功能，點擊無反應 ｜低｜index.html、app.js（既有缺口，2026-08-04 發現，後端 `readRealCalendarEvents_` 目前只抓「今天起 30 天」也需一併改才有意義，使用者選擇先擱置）
 
 ## 2. GAS 後端與雙向同步
 
@@ -35,3 +35,7 @@
 - [x] 啟用 GitHub Pages（使用者手動於 repo Settings 完成） ｜2026-08-03
 - [x] header 排版修正：允許換行，避免右側按鈕超出畫面點不到 ｜2026-08-03｜styles.css
 - [x] 手機瀏覽器（GitHub Pages 網址）測試通過，含 GAS 重新連線設定 ｜2026-08-03
+- [x] 第三頁新增「文件與合約牆」，串接 Sheet 新分頁 `Documents_and_Contracts` ｜2026-08-04｜index.html、app.js、Create_Google_Sheet.gs
+- [x] 手機版排版強化（直式時間軸/月曆格子/header 多項斷點調整） ｜2026-08-04｜styles.css
+- [x] 月曆格子手機版橫向溢出修正（grid-template-columns 改 minmax(0,1fr)） ｜2026-08-04｜styles.css
+- [x] GAS 讀取加 45 秒 CacheService 快取，減少每次冷啟動+重算全部分頁的等待 ｜2026-08-04｜Create_Google_Sheet.gs
