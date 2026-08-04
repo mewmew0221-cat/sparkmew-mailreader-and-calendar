@@ -557,7 +557,7 @@ body {
 
 .month-grid-container {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
   margin-top: 14px;
 }
@@ -828,7 +828,7 @@ body {
   .v-card-info h4 { font-size: 0.95rem !important; line-height: 1.3 !important; word-break: break-word !important; }
 
   /* 月曆格子：手機版縮小格子與內距，避免橫向擠出捲軸 */
-  .month-grid-container { grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 8px; }
+  .month-grid-container { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 8px; }
   .month-grid-header-cell { font-size: 0.72rem; padding: 4px 2px; }
   .month-grid-day-cell { min-height: 52px; padding: 3px 2px; border-radius: 6px; }
   .day-number { font-size: 0.72rem; }
